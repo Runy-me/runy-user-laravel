@@ -22,7 +22,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $customers = Customers::with('users')->get();
+        $customers = Customers::with('user')->get();
         return response()->json($customers);
     }
 
