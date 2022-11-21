@@ -25,4 +25,12 @@ class Customers extends Model
         return $this->hasOne( User::class, 'domainId');
     }
 
+    public function address(){
+        return $this->hasOne( User::class, 'domainId');
+    }
+
+    public function custommerOccupation(){
+        return $this->belongsTo( CustomersOccupation::class, 'occupationId');
+    }
+
 }

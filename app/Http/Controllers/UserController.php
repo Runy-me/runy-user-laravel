@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customers;
+use App\Models\CustomersOccupation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,18 @@ class UserController extends Controller
     public function index()
     {
         $customers = Customers::with('user')->get();
+        foreach ($customers as $customer) {
+            $customer->occupation = $this->takeOccupation($customer->id);
+        }
+
         return response()->json($customers);
+    }
+
+    public function takeOccupation($id)
+    {
+        $customer = CustomersOccupation::with('occupation')->where('customerId', $id)->first();
+        // return is_null($customer->occupation) ? $customer->occupation : 'Médico';
+        return 'Médico'; 
     }
 
     /**
@@ -49,6 +61,7 @@ class UserController extends Controller
             DB::beginTransaction();
             $customer = new Customers();
             $user = new User();
+            $customerOccupation = new CustomersOccupation();
 
             $customer->insert([
                 'updatedAt' => Carbon::now(),
@@ -56,6 +69,13 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'id' => $id,
+            ]);
+
+            $customerOccupation->insert([
+                'updatedAt'  => Carbon::now(),
+                'createdAt'  => Carbon::now(),
+                'customerId' => $id,
+                'occupationId' => $this->chooseOccupation($request->occupation)
             ]);
 
             $user->insert([
@@ -77,6 +97,30 @@ class UserController extends Controller
             Log::error($e);
             DB::rollBack();
             return response()->json(['success' => false, 'resposta' => 'usuario não foi criado']);
+        }
+    }
+
+    public function chooseOccupation($occupation): string
+    {
+        switch ($occupation) {
+            case 'Especialista':
+                return '676044b4-e5be-4727-af0c-d5f4fab89bf0';
+                break;
+            case 'Gestor de Escala (não sou médico)':
+                return '87981cbe-fb3c-40fc-8da5-d3fc17bcbfe9';
+                break;
+            case 'Médico':
+                return 'b9c74f84-f8dc-42b9-9a39-a8edaa7f5e41';
+                break;
+            case 'Residente':
+                return 'c811f3ed-4f6a-4ecb-ba09-6f785eef7951';
+                break;
+            case 'Estudante':
+                return 'f270a37d-1c8c-407e-accb-e02b4edc5fa3';
+                break;
+            default:
+                return 'b9c74f84-f8dc-42b9-9a39-a8edaa7f5e41';
+                break;
         }
     }
 
@@ -150,6 +194,11 @@ class UserController extends Controller
         $customer->name = $request->name;
         $customer->email = $request->email;
 
+        $customerOccupation = CustomersOccupation::where('customerId', $id)->first();
+        $customerOccupation->crm = $request->crm ? $request->crm : '';
+        $customerOccupation->updatedAt = Carbon::now();
+        $customerOccupation->occupationId = $this->chooseOccupation($request->occupation);
+
         $user = User::where('domainId', $id)->first();
         $user->name = $request->name;
         $user->email = $request->email;
@@ -160,6 +209,7 @@ class UserController extends Controller
 
         $user->save();
         $customer->save();
+        $customerOccupation->save();
 
         return response()->json(['sucess' => true, 'resposta' => 'Usuario atualizado com sucesso']);
     }
@@ -174,6 +224,7 @@ class UserController extends Controller
     {
         Customers::where('id', $id)->delete();
         User::where('domainId', $id)->delete();
+        CustomersOccupation::where('customerId', $id)->delete();
 
         return response()->json(['sucess' => true, 'resposta' => 'usuario deletado']);
     }
