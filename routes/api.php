@@ -21,3 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::apiResource('/users', UserController::class);
+
+Route::get('/teste', function () {
+    return response()->json(['dev' => 'walter']);
+});
