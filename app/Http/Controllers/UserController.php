@@ -204,8 +204,7 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->lastAccess = Carbon::now();
         $user->domain = $this->role($request->manager);
-        $user->password = $this->generateHash($request->password);
-
+        $user->password = $request->password == "" ? $user->password : $this->generateHash($request->password);
 
         $user->save();
         $customer->save();
