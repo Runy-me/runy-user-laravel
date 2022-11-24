@@ -195,7 +195,7 @@ class UserController extends Controller
         $customer->email = $request->email;
 
         $customerOccupation = CustomersOccupation::where('customerId', $id)->first();
-        $customerOccupation->crm = $request->crm ? $request->crm : '';
+        $customerOccupation->crm = $request->crm ? $request->crm : $customerOccupation->crm;
         $customerOccupation->updatedAt = Carbon::now();
         $customerOccupation->occupationId = $this->chooseOccupation($request->occupation);
 
