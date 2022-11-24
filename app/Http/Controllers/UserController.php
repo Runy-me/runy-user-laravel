@@ -195,7 +195,7 @@ class UserController extends Controller
         $customer->email = $request->email;
 
         $customerOccupation = CustomersOccupation::where('customerId', $id)->first();
-        $customerOccupation->crm = $request->crm ? $request->crm : '';
+        $customerOccupation->crm = $request->crm ? $request->crm : $customerOccupation->crm;
         $customerOccupation->updatedAt = Carbon::now();
         $customerOccupation->occupationId = $this->chooseOccupation($request->occupation);
 
@@ -204,8 +204,7 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->lastAccess = Carbon::now();
         $user->domain = $this->role($request->manager);
-        $user->password = $this->generateHash($request->password);
-
+        $user->password = $request->password == "" ? $user->password : $this->generateHash($request->password);
 
         $user->save();
         $customer->save();

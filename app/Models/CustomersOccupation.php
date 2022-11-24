@@ -11,6 +11,10 @@ class CustomersOccupation extends Model
 
     public $timestamps = false;
 
+    protected $primaryKey = 'customerId'; // or null
+
+    public $incrementing = false;
+
     protected $table = 'customer_occupations';
 
     public function occupation(){
